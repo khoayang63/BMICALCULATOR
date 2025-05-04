@@ -2,37 +2,39 @@ include 'emu8086.inc'
 
 .MODEL SMALL
 .stack 100h
-.data 
+.data
+MUC1 db 'Thieu can: BMI < 19$'
+MUC2 db 'Du can: 19 <= BMI < 25$'
+MUC3 db 'Thua can: BMI > 25$'
 MSA db ' ==================== WELCOME TO OUR PROJECT ====================$' 
-MSB db ' ******************** BMI CALCULATOR ********************$'
-MSD db ' Input your height in cm: $'
-MSE db ' Input your weight in kg: $'
-MSF db ' "Your weight is: overweight"$'
-MSG db ' "Your weight is: perfect"$'
-MSH db ' "Your weight is: underweight"$'
-MSI db ' "Press 1 to see the instruction if you are underweight"$'
-MSJ db ' "Press 2 to see the instruction if you are overweight" $'
+MSB db ' ******************** May tinh BMI ********************$'
+MSD db ' Nhap chieu cao(cm): $'
+MSE db ' Nhap can nang(kg): $'
+MSF db ' "Ban dang bi thua can"$'
+MSG db ' "Can nang cua ban hoan hao"$'
+MSH db ' "Ban dang bi thieu can"$'
+MSI db ' Ban nen: $'
+MSK1 db ' " 1. An nhieu hon va ngu du 8 tieng moi ngay."$'
+MSK2 db ' " 2. Bo sung thuc pham giau calo (khoai tay, gao lut, uc ga, dau ga, hanh nhan, khoai lang, v.v.)"$'
+MSK3 db ' " 3. Uong it nhat 2 lit nuoc moi ngay."$'
+MSK4 db ' " 4. An rau xanh, uong 1 ly sua va 1 qua trung moi ngay."$'
 
-MSK1 db ' " 1.Eat more and sleep 8 hours a day."$'
-MSK2 db ' " 2.Absorb high calorie food (potato, brown rice, chicken breast, check peas, almond, sweet potato etc.)"$'
-MSK3 db ' " 3.Drink at least 2L water per day."$'
-MSK4 db ' " 4.Eat vegetables and 1 glass of milk and 1 whole egg each day."$'
+MSL1 db ' " 1. Co gang tuan thu che do an lanh manh, it calo."$'
+MSL2 db ' " 2. An nhieu dam, rau cu va tranh do an nhanh."$'
+MSL3 db ' " 3. Tap the duc de giam can (di bo, chay bo, gap bung, nhay day)."$'
 
-MSL1 db ' " 1.Try to follow a low calorie healthy diet."$'
-MSL2 db ' " 2.Eat high protein, vegetables and avoid fast food."$'
-MSL3 db ' " 3.Do some workout for weight lose (walking, running, crunching, ropping )."$' 
+MSN db ' Chuc mung..! Hay tiep tuc phat huy.$'
 
-MSN db ' Congratulation,..! Keep it up.$'
+MSM1 db ' " Nhan 1 de tinh lai chi so BMI."$'
+MSM2 db ' " Nhan 2 de THOAT."$'
+MSM3 db '          ********CAM ON BAN********$'
+MSM4 db ' " Nhan phim bat ky de tiep tuc...."$'
 
-MSM1 db ' " Press 1 to Recalculate."$'
-MSM2 db ' " Press 2 to EXIT."$' 
-MSM3 db '          ********THANK YOU********$'
-MSM4 db ' " Press any key to continue...."$' 
-INVALIDINPUT db "Invalid input..!Please, try again..!"
+INVALIDINPUT db "Nhap sai..! Vui long thu lai..!"
 
-NL DB 13,10,13,10,'$'
 
-SUM DW 0  
+nl db 13,10,13,10,'$'
+  
 str1 db 5 dup ('$')
 str2 db 5 dup ('$') 
 weight dw ? 
@@ -78,8 +80,7 @@ INTRO proc
     
     lea dx, MSA
     mov ah, 9
-    int 21h
-    
+    int 21h 
     lea dx, nl
     int 21h 
     
@@ -88,6 +89,21 @@ INTRO proc
     
     lea dx, nl
     int 21h  
+    
+    lea dx, MUC1
+    int 21h
+    lea dx, nl
+    int 21h
+    
+    lea dx, MUC2
+    int 21h
+    lea dx, nl
+    int 21h
+    
+    lea dx, MUC3
+    int 21h
+    lea dx, nl
+    int 21h
     
     xor ax, ax
     xor bx, bx
@@ -102,12 +118,13 @@ WEIGHTHEIGHT proc
     lea dx, MSD
     int 21h            
     
-    ;nhap so bang chuoi
+    ;nhap chieu cao bang chuoi
     mov ah, 10
     lea dx, str1
     int 21h
     
-    call STR1toINT
+    call STR1toINT   
+    ;cho vao bien height
     mov height, ax 
       
     mov ah, 9
@@ -115,8 +132,9 @@ WEIGHTHEIGHT proc
     int 21h
     
     lea dx, MSE
-    int 21h     
-
+    int 21h        
+    
+    ;giong nhu tren
     mov ah, 10
     lea dx, str2
     int 21h
@@ -126,7 +144,7 @@ WEIGHTHEIGHT proc
     ret
 WEIGHTHEIGHT endp   
 
-
+; 2 ham duoi de chuyen xau sang so thap phan
 STR1toINT proc
     mov cl, [str1+1]
 
@@ -163,6 +181,7 @@ STR2toINT proc
     ret
 STR2toINT endp    
 
+;tinh chi so bmi
 CALCBMI proc  
     mov ah, 9
     lea dx, nl
@@ -180,9 +199,10 @@ CALCBMI proc
     mov bx, 10000
     mul bx
     
-    div cx
-    cmp ax, 18 
-    mov bmi, ax
+    div cx  
+    mov bmi, ax  
+    cmp ax, 19 
+
     
     jl UNDERWEIGHT
     
@@ -210,61 +230,31 @@ CALCBMI proc
     
     
     ENDBMI: 
-    mov ah, 9
-    lea dx, nl
-    int 21h  
     ret
 CALCBMI endp 
 
+;loi khuyen
 INSTRUCTION proc    
     mov ax, bmi
     cmp ax, 25
-    jge CHOOSEBUTTON
-    cmp ax, 18
-    jl CHOOSEBUTTON
+    jge INSTRUCTION2
+    cmp ax, 19
+    jl INSTRUCTION1
     
     mov ah, 9 
+    lea dx, nl
+    int 21h
     lea dx, MSN
     int 21h
     jmp ENDINSTRUCTION
     
-    CHOOSEBUTTON:
-      
-    mov ah, 9  
-    lea dx, nl
-    int 21h
-    
-    lea dx, MSI
-    int 21h
-    
-    lea dx, nl
-    int 21h
-    
-    lea dx, MSJ
-    int 21h
-    
-    lea dx, nl
-    int 21h
-    
-    mov ah, 1
-    int 21h
-    
-    cmp al, '1'
-    je INSTRUCTION1     
-    
-    cmp al, '2'
-    je INSTRUCTION2
-    
-    INVALID:              
+    ; thieu can
+    INSTRUCTION1:  
         mov ah, 9   
         lea dx, nl
         int 21h
-        lea dx, INVALIDINPUT
+        lea dx, MSI 
         int 21h
-        jmp CHOOSEBUTTON
-    
-    INSTRUCTION1:
-        mov ah, 9
         lea dx, nl
         int 21h
         lea dx, MSK1
@@ -284,9 +274,13 @@ INSTRUCTION proc
         lea dx, nl
         int 21h  
         jmp ENDINSTRUCTION
-    
+    ; beo
     INSTRUCTION2:  
         mov ah, 9  
+        lea dx, nl   
+        int 21h   
+        lea dx, MSI
+        int 21h
         lea dx, nl
         int 21h
         lea dx, MSL1
@@ -310,7 +304,7 @@ INSTRUCTION proc
     ret
 INSTRUCTION ENDP   
 
-
+;in thong bao ket thuc
 ENDING proc
     mov ah, 9
     lea dx, MSM1
