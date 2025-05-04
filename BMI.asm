@@ -2,10 +2,12 @@ include 'emu8086.inc'
 
 .MODEL SMALL
 .stack 100h
-.data
-MUC1 db 'Thieu can: BMI < 19$'
-MUC2 db 'Du can: 19 <= BMI < 25$'
-MUC3 db 'Thua can: BMI > 25$'
+.data 
+
+MUC1 db 'Thieu can: BMI < 18.5$'
+MUC2 db 'Du can: 18.5 <= BMI < 25$'
+MUC3 db 'Thua can: BMI >= 25$'   
+MSZ db 'Chi so BMI cua ban la: $'
 MSA db ' ==================== WELCOME TO OUR PROJECT ====================$' 
 MSB db ' ******************** May tinh BMI ********************$'
 MSD db ' Nhap chieu cao(cm): $'
@@ -40,6 +42,8 @@ str2 db 5 dup ('$')
 weight dw ? 
 height dw ? 
 bmi dw ?
+rem dw ?  
+status dw ?
 
 .code
 
@@ -67,7 +71,13 @@ main proc
             jmp WANNATRYAGAIN
         
     
-    ENDMAIN:    
+    ENDMAIN:   
+    ;thong bao cam on
+    mov ah, 9
+    lea dx, MSM3
+    int 21h
+    lea dx, nl
+    int 21h    
     mov ah, 4ch
     int 21h 
 main endp  
@@ -186,7 +196,6 @@ CALCBMI proc
     mov ah, 9
     lea dx, nl
     int 21h  
-    int 21h
     xor dx,dx
     ;bmi = w*10000/(h*h)
     
@@ -200,29 +209,53 @@ CALCBMI proc
     mul bx
     
     div cx  
-    mov bmi, ax  
-    cmp ax, 19 
-
+    mov bmi, ax
     
+    ;tinh phan thap phan   
+    ;lay phan du trong dx luu vao ax,sau *10 roi chia cho h*h luu o cx  
+    mov ax, dx
+    mov bx, 10
+    mul bx   
+    div cx 
+    mov rem, ax
+    
+    call PRINTBMI
+    ; nho hon 18 thi thieucan 
+    mov ax, bmi  
+    cmp ax, 18 
     jl UNDERWEIGHT
     
+    ; lon hon = 25 thi thua can
+    mov ax, bmi
     cmp ax, 25
     jge OVERWEIGHT
     
+    ; 19 <= bmi < 25
+    mov ax, bmi
+    cmp ax, 18
+    jg PERFECT  
+        
+    ;so sanh phan du voi 5 
+    mov ax, rem
+    cmp ax, 5
+    jl UNDERWEIGHT
     
-    PERFECT:    
+    PERFECT:
+        mov status, 2   
         mov ah, 9
         lea dx, MSG  
         int 21h
         jmp ENDBMI
     
-    UNDERWEIGHT:   
+    UNDERWEIGHT: 
+        mov status, 1  
         mov ah, 9
         lea dx, MSH  
         int 21h
         jmp ENDBMI
         
-    OVERWEIGHT:    
+    OVERWEIGHT:   
+        mov status, 3 
         mov ah, 9
         lea dx, MSF 
         int 21h
@@ -233,13 +266,58 @@ CALCBMI proc
     ret
 CALCBMI endp 
 
+PRINTBMI proc 
+    
+    ;Chi so bmi cua ban la:
+    mov ah, 9
+    lea dx, MSZ
+    int 21h                
+
+    ; xoa phan high dx:ax  
+    xor dx, dx
+    mov ax, bmi
+    mov bx, 10
+    div bx
+    
+    ;luu phan du sang cx
+    mov cx, dx          
+    
+    mov dx, ax 
+    ;neu dx bang 0 nghia la bmi chi co 1 chu so
+    cmp dx, 0
+    je PRINTDONVI
+    
+    add dx, '0'
+    mov ah, 2 
+    int 21h
+    
+    PRINTDONVI:
+    mov ah, 2
+    mov dx, cx
+    add dx, '0'
+    int 21h    
+    
+    mov dl, '.'
+    int 21h
+    
+    mov dx, rem   
+    add dx, '0'
+    int 21h
+    
+    mov ah, 9
+    lea dx, nl
+    int 21h
+    
+    ret
+PRINTBMI endp
+
 ;loi khuyen
 INSTRUCTION proc    
-    mov ax, bmi
-    cmp ax, 25
-    jge INSTRUCTION2
-    cmp ax, 19
-    jl INSTRUCTION1
+    mov ax, status
+    cmp ax, 3
+    je INSTRUCTION2
+    cmp ax, 1
+    je INSTRUCTION1
     
     mov ah, 9 
     lea dx, nl
@@ -312,14 +390,6 @@ ENDING proc
     lea dx, nl
     int 21h
     lea dx, MSM2
-    int 21h
-    lea dx, nl
-    int 21h
-    lea dx, MSM3
-    int 21h
-    lea dx, nl
-    int 21h
-    lea dx, MSM4
     int 21h
     lea dx, nl
     int 21h
