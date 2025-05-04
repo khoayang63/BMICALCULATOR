@@ -3,31 +3,32 @@ include 'emu8086.inc'
 .MODEL SMALL
 .stack 100h
 .data 
-MSA DB ' ==================== WELCOME TO OUR PROJECT ====================$' 
-MSB DB ' ******************** BMI CALCULATOR ********************$'
-MSD DB ' Input your height in cm: $'
-MSE DB ' Input your weight in kg: $'
-MSF DB ' "Your weight is: overweight"$'
-MSG DB ' "Your weight is: perfect"$'
-MSH DB ' "Your weight is: underweight"$'
-MSI DB ' "Press 1 to see the instruction if you are underweight"$'
-MSJ DB ' "Press 2 to see the instruction if you are overweight" $'
+MSA db ' ==================== WELCOME TO OUR PROJECT ====================$' 
+MSB db ' ******************** BMI CALCULATOR ********************$'
+MSD db ' Input your height in cm: $'
+MSE db ' Input your weight in kg: $'
+MSF db ' "Your weight is: overweight"$'
+MSG db ' "Your weight is: perfect"$'
+MSH db ' "Your weight is: underweight"$'
+MSI db ' "Press 1 to see the instruction if you are underweight"$'
+MSJ db ' "Press 2 to see the instruction if you are overweight" $'
 
-MSK1 DB ' " 1.Eat more and sleep 8 hours a day."$'
-MSK2 DB ' " 2.Absorb high calorie food (potato, brown rice, chicken breast, check peas, almond, sweet potato etc.)"$'
-MSK3 DB ' " 3.Drink at least 2L water per day."$'
-MSK4 DB ' " 4.Eat vegetables and 1 glass of milk and 1 whole egg each day."$'
+MSK1 db ' " 1.Eat more and sleep 8 hours a day."$'
+MSK2 db ' " 2.Absorb high calorie food (potato, brown rice, chicken breast, check peas, almond, sweet potato etc.)"$'
+MSK3 db ' " 3.Drink at least 2L water per day."$'
+MSK4 db ' " 4.Eat vegetables and 1 glass of milk and 1 whole egg each day."$'
 
-MSL1 DB ' " 1.Try to follow a low calorie healthy diet."$'
-MSL2 DB ' " 2.Eat high protein, vegetables and avoid fast food."$'
-MSL3 DB ' " 3.Do some workout for weight lose (walking, running, crunching, ropping )."$' 
+MSL1 db ' " 1.Try to follow a low calorie healthy diet."$'
+MSL2 db ' " 2.Eat high protein, vegetables and avoid fast food."$'
+MSL3 db ' " 3.Do some workout for weight lose (walking, running, crunching, ropping )."$' 
 
-MSN DB ' Congratulation,..! Keep it up.$'
+MSN db ' Congratulation,..! Keep it up.$'
 
-MSM1 DB ' " Press 1 to Recalculate."$'
-MSM2 DB ' " Press 2 to EXIT."$' 
-MSM3 DB '          ********THANK YOU********$'
-MSM4 DB ' " Press any key to continue...."$'
+MSM1 db ' " Press 1 to Recalculate."$'
+MSM2 db ' " Press 2 to EXIT."$' 
+MSM3 db '          ********THANK YOU********$'
+MSM4 db ' " Press any key to continue...."$' 
+INVALIDINPUT db "Invalid input..!Please, try again..!"
 
 NL DB 13,10,13,10,'$'
 
@@ -47,19 +48,31 @@ main proc
         call WEIGHTHEIGHT
         call CAlCBMI  
         call INSTRUCTION
-        call ENDING
+
+        WANNATRYAGAIN:  
+            call ENDING
+            mov ah, 1
+            int 21h  
+            cmp al, '1'
+            je START   
+            cmp al, '2'
+            je ENDMAIN
+            mov ah, 9   
+            lea dx, nl
+            int 21h
+            lea dx, INVALIDINPUT
+            int 21h
+            jmp WANNATRYAGAIN
         
-        mov ah, 1
-        int 21h  
-        cmp al, '1'
-        je START
-        
+    
+    ENDMAIN:    
     mov ah, 4ch
     int 21h 
 main endp  
 
 
-INTRO proc     
+INTRO proc
+    ;thong bao      
     mov ax, @data
     mov ds, ax
     
@@ -237,8 +250,18 @@ INSTRUCTION proc
     int 21h
     
     cmp al, '1'
+    je INSTRUCTION1     
     
-    jne INSTRUCTION2
+    cmp al, '2'
+    je INSTRUCTION2
+    
+    INVALID:              
+        mov ah, 9   
+        lea dx, nl
+        int 21h
+        lea dx, INVALIDINPUT
+        int 21h
+        jmp CHOOSEBUTTON
     
     INSTRUCTION1:
         mov ah, 9
