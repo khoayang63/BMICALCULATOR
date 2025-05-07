@@ -32,8 +32,8 @@ MSM2 db ' " Nhan 2 de THOAT."$'
 MSM3 db '          ********CAM ON BAN********$'
 MSM4 db ' " Nhan phim bat ky de tiep tuc...."$'
 
-INVALIDINPUT db "Nhap sai..! Vui long thu lai..!"
-
+INVALIDINPUT db "Nhap sai..! Vui long thu lai..!$"
+RANDOMBUTTON db "Nhan nut bat ki de tiep tuc......$"
 
 nl db 13,10,13,10,'$'
   
@@ -55,29 +55,29 @@ main proc
         call CAlCBMI  
         call INSTRUCTION
 
-        WANNATRYAGAIN:  
+        WANNATRYAGAIN:
             call ENDING
             mov ah, 1
             int 21h  
             cmp al, '1'
             je START   
             cmp al, '2'
-            je ENDMAIN
+            je ENDMAIN 
+            ;nhan nut khong hop le 
+            gotoxy 22,15
             mov ah, 9   
-            lea dx, nl
-            int 21h
             lea dx, INVALIDINPUT
-            int 21h
+            int 21h     
             jmp WANNATRYAGAIN
         
     
-    ENDMAIN:   
-    ;thong bao cam on
+    ENDMAIN: 
+    call CLEAR_SCREEN  
+    ;thong bao cam on  
+    gotoxy 16,10
     mov ah, 9
     lea dx, MSM3
-    int 21h
-    lea dx, nl
-    int 21h    
+    int 21h 
     mov ah, 4ch
     int 21h 
 main endp  
@@ -89,29 +89,27 @@ INTRO proc
     mov ds, ax
     
     lea dx, MSA
+    gotoxy 6,1
     mov ah, 9
     int 21h 
-    lea dx, nl
-    int 21h 
-    
+
+    ;cho contro den vi tri 11,3
+    gotoxy 11,3
     lea dx, MSB
     int 21h
     
-    lea dx, nl
-    int 21h  
-    
+    gotoxy 7,5
     lea dx, MUC1
     int 21h
-    lea dx, nl
-    int 21h
     
+    gotoxy 7,7
     lea dx, MUC2
     int 21h
-    lea dx, nl
-    int 21h
     
+    gotoxy 7,9
     lea dx, MUC3
-    int 21h
+    int 21h  
+    
     lea dx, nl
     int 21h
     
@@ -123,7 +121,8 @@ INTRO proc
     ret
 INTRO endp   
 
-WEIGHTHEIGHT proc  
+WEIGHTHEIGHT proc   
+    gotoxy 6,11
     mov ah, 9 
     lea dx, MSD
     int 21h            
@@ -136,11 +135,12 @@ WEIGHTHEIGHT proc
     call STR1toINT   
     ;cho vao bien height
     mov height, ax 
-      
+    
     mov ah, 9
     lea dx, nl
     int 21h
     
+    gotoxy 6,13 
     lea dx, MSE
     int 21h        
     
@@ -241,13 +241,15 @@ CALCBMI proc
     jl UNDERWEIGHT
     
     PERFECT:
-        mov status, 2   
+        mov status, 2
+        gotoxy 6,17   
         mov ah, 9
         lea dx, MSG  
         int 21h
         jmp ENDBMI
     
-    UNDERWEIGHT: 
+    UNDERWEIGHT:  
+        gotoxy 6,17 
         mov status, 1  
         mov ah, 9
         lea dx, MSH  
@@ -255,6 +257,7 @@ CALCBMI proc
         jmp ENDBMI
         
     OVERWEIGHT:   
+        gotoxy 6,17 
         mov status, 3 
         mov ah, 9
         lea dx, MSF 
@@ -268,7 +271,8 @@ CALCBMI endp
 
 PRINTBMI proc 
     
-    ;Chi so bmi cua ban la:
+    ;Chi so bmi cua ban la: 
+    gotoxy 7,15
     mov ah, 9
     lea dx, MSZ
     int 21h                
@@ -379,16 +383,24 @@ INSTRUCTION proc
     mov ah, 9
     lea dx, nl
     int 21h
+    mov ah, 9
+    lea dx, RANDOMBUTTON
+    int 21h
+    mov ah, 7
+    int 21h  
+    call CLEAR_SCREEN  
     ret
 INSTRUCTION ENDP   
 
 ;in thong bao ket thuc
 ENDING proc
+    gotoxy 20,10
     mov ah, 9
     lea dx, MSM1
     int 21h
     lea dx, nl
     int 21h
+    gotoxy 20,12
     lea dx, MSM2
     int 21h
     lea dx, nl
